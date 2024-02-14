@@ -42,6 +42,8 @@ end
 function startGame()
     state["Running"] = true
     state["Start"] = false
+    state["Pause"] = false
+    state["Closing"] = false
 end
 
 function exit_game()
@@ -214,6 +216,11 @@ function love.update(dt)
         end
     end
 
+    if player.health < 0 then
+        state["Running"] = false
+        state["Closing"] = true
+    end
+
     ---camera
     local width = love.graphics.getWidth()
     local height = love.graphics.getHeight()
@@ -255,6 +262,7 @@ function love.draw()
         buttons.start_state.save:draw(10, 70, 17, 10)
         buttons.start_state.exit_game:draw(10, 120, 17, 10)
     elseif state["Closing"] == true then
+        buttons.start_state.play_game:draw(10, 20, 17, 10)
         love.graphics.printf("THANKS FOR PLAYING", love.graphics.newFont(16), 10, love.graphics.getHeight() - 350, love.graphics.getWidth())
     end
     love.graphics.printf("FPS: " .. love.timer.getFPS(), love.graphics.newFont(16), 10, love.graphics.getHeight() - 30, love.graphics.getWidth())
