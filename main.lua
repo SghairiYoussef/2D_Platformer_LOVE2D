@@ -1,6 +1,5 @@
 button = require 'Button'
 local grid
-
 jumpCount = 0
 storyProgress = 1
 fallDistance = 0
@@ -126,12 +125,6 @@ function love.load()
         isFalling = false
     }
 
-
-
-    background = love.graphics.newImage("Sprites/SUMMER BG/PNG/summer 3/Summer3.png")
-    FRAME_WIDTH = background:getWidth()
-    FRAME_HEIGHT = background:getHeight()
-
     --camera
     camera = require 'lib/camera'
     cam = camera()
@@ -197,7 +190,7 @@ function love.update(dt)
     if player.collider:enter("Environment") then
         jumpCount = 0
         player.isJumping = false
-        local fallThreshold = 150
+        local fallThreshold = 250
         if fallDistance > fallThreshold then
             local fallDamage = fallDistance * 0.02
             player.health = player.health - fallDamage
@@ -238,25 +231,24 @@ function love.update(dt)
     if cam.y > (height - height/2) then
         cam.y = height - height/2
     end
+
 end
 
 function love.draw()
     world:draw()
     if state["Running"] == true then
-        cam:attach()
-        love.graphics.draw(background)
         love.graphics.rectangle("fill", 10, 10 , player.maxHealth * 2, 15)
         love.graphics.setColor(1, 0, 0)
         love.graphics.rectangle("fill", 10, 10, player.health * 2 * player.maxHealth/100, 15)
         love.graphics.setColor(1, 1, 1)
         love.graphics.printf("HP: " .. tonumber(player.health) .."/" .. player.maxHealth, love.graphics.newFont(16), 10 + player.maxHealth *2, 10, love.graphics.getWidth())
+        cam:attach()
         if player.animation.direction == "right" then
             player.animation.animation:draw(player.spriteSheet, player.x, player.y)
         else
             player.animation.animation:draw(player.spriteSheet, player.x-18, player.y, 0, -1, 1, QUAD_WIDTH, 0)
         end
         cam:detach()
-        bool = false
     elseif state["Start"] == true or state["Pause"] == true then
         buttons.start_state.play_game:draw(10, 20, 17, 10)
         buttons.start_state.save:draw(10, 70, 17, 10)
