@@ -74,36 +74,39 @@ function love.load()
 
     --Physcis
     wf = require 'lib/windfield'
+    sti = require 'lib/sti'
+
+    gameMap = sti('Maps/Sheran_LVL1.lua')
+
     world = wf.newWorld(0, 500)
     world: addCollisionClass('Player')
     world: addCollisionClass('Walls')
     world: addCollisionClass('Environment')
 
-    ground = world:newRectangleCollider(0,630,1200,1200)
-    ground:setType('static')
-    ground:setCollisionClass('Environment')
     groundY = 570
 
-    left_Wall = world:newRectangleCollider(-30, 30, 30, 675)
-    left_Wall:setType('static')
-    left_Wall:setCollisionClass('Walls')
-
-    right_Wall = world:newRectangleCollider(1200, 30, 30, 675)
-    right_Wall:setType('static')
-    right_Wall:setCollisionClass('Walls')
+    walls={}
+    if gameMap.layers["Object Layer 1"] then
+        for i,obj in pairs(gameMap.layers["Object Layer 1"].objects) do
+            local wall = world:newRectangleCollider(obj.x, obj.y+30, obj.width, obj.height)
+            wall:setType('static')
+            wall:setCollisionClass('Walls')
+            wall:setCollisionClass('Environment')
+            table.insert(walls, wall)
+        end
+    end
 
     player = {}
-    player.x = 20
-    player.y = 400
     player.speed = 300
     player.health = 80
     player.maxHealth = 100
-    player.collider = world:newRectangleCollider(player.x, player.y , 30, 80)
+    player.collider = world:newRectangleCollider(20, 400, 10, 60)
     player.collider:setCollisionClass('Player')
     player.collider:setFixedRotation (true)
 
     --animations & graphics
     anim8 = require 'lib/anim8'
+
     love.graphics.setDefaultFilter("nearest", "nearest")
 
     player.spriteSheet = love.graphics.newImage('Sprites/shinobi/shinobi/walk.png')
@@ -141,6 +144,9 @@ function love.update(dt)
     local isMoving, isRunning = false, false
     local px, py = player.collider:getLinearVelocity()
     local vx = 0
+    local mapW = gameMap.width * gameMap.tilewidth
+    local mapH = gameMap.height * gameMap.tileheight
+    
     if love.keyboard.isDown('right')then
         player.animation.idle = false
         player.animation.direction = "right"
@@ -180,8 +186,6 @@ function love.update(dt)
 
     player.collider:setLinearVelocity(vx, py)
     world:update(dt)
-    player.x = player.collider:getX()-55
-    player.y = player.collider:getY()-87
 
     if not player.animation.idle then
         player.animation.animation:update(dt)
@@ -205,7 +209,7 @@ function love.update(dt)
     if player.isJumping == true then
         player.spriteSheet = love.graphics.newImage('Sprites/shinobi/shinobi/jump.png')
         if py<0 then
-            fallDistance = math.abs(player.y - groundY)
+            fallDistance = math.abs(player.collider:getY() - groundY)
         end
     end
 
@@ -218,24 +222,22 @@ function love.update(dt)
     local width = love.graphics.getWidth()
     local height = love.graphics.getHeight()
 
-    cam:lookAt(player.x, player.y)
+    cam:lookAt(player.collider:getX(), player.collider:getY())
     if cam.x < width/2 then
         cam.x = width/2
     end
     if cam.y < height/2 then
         cam.y = height/2
     end
-    if cam.x > (width - width/2) then
-        cam.x = width - width/2
+    if cam.x > (mapW - width/2) then
+         cam.x = mapW - width/2
     end
-    if cam.y > (height - height/2) then
-        cam.y = height - height/2
+    if cam.y > (mapH - height/2) then
+        cam.y = mapH - height/2
     end
-
 end
 
 function love.draw()
-    world:draw()
     if state["Running"] == true then
         love.graphics.rectangle("fill", 10, 10 , player.maxHealth * 2, 15)
         love.graphics.setColor(1, 0, 0)
@@ -243,10 +245,15 @@ function love.draw()
         love.graphics.setColor(1, 1, 1)
         love.graphics.printf("HP: " .. tonumber(player.health) .."/" .. player.maxHealth, love.graphics.newFont(16), 10 + player.maxHealth *2, 10, love.graphics.getWidth())
         cam:attach()
+        gameMap:drawLayer(gameMap.layers["Mountains"])
+        gameMap:drawLayer(gameMap.layers["BACKGROUND TREES"])
+        gameMap:drawLayer(gameMap.layers["Tile Layer 1"])
+        gameMap:drawLayer(gameMap.layers["Trees"])
+        gameMap:drawLayer(gameMap.layers["Objects"])
         if player.animation.direction == "right" then
-            player.animation.animation:draw(player.spriteSheet, player.x, player.y)
+            player.animation.animation:draw(player.spriteSheet, player.collider:getX()-40, player.collider:getY()-100)
         else
-            player.animation.animation:draw(player.spriteSheet, player.x-18, player.y, 0, -1, 1, QUAD_WIDTH, 0)
+            player.animation.animation:draw(player.spriteSheet, player.collider:getX()-53, player.collider:getY()-100, 0, -1, 1, QUAD_WIDTH, 0)
         end
         cam:detach()
     elseif state["Start"] == true or state["Pause"] == true then
@@ -258,13 +265,14 @@ function love.draw()
         love.graphics.printf("THANKS FOR PLAYING", love.graphics.newFont(16), 10, love.graphics.getHeight() - 350, love.graphics.getWidth())
     end
     love.graphics.printf("FPS: " .. love.timer.getFPS(), love.graphics.newFont(16), 10, love.graphics.getHeight() - 30, love.graphics.getWidth())
-
+    
+    --world:draw()
 end
 
 -- Jump Functionalities
 function love.keypressed(key)
     if key == 'space'  and jumpCount<2 then
-        player.collider:applyLinearImpulse(0, -1000)
+        player.collider:applyLinearImpulse(0, -200)
         jumpCount = jumpCount + 1
         player.isJumping = true
     end
