@@ -98,7 +98,7 @@ function love.load()
 
     player = {}
     player.speed = 300
-    player.health = 80
+    player.health = 100
     player.maxHealth = 100
     player.collider = world:newRectangleCollider(20, 400, 10, 60)
     player.collider:setCollisionClass('Player')
@@ -274,7 +274,7 @@ end
 -- Jump Functionalities
 function love.keypressed(key)
     if key == 'space'  and jumpCount<2 then
-        player.collider:applyLinearImpulse(0, -200)
+        player.collider:applyLinearImpulse(0, -150)
         jumpCount = jumpCount + 1
         player.isJumping = true
     end
