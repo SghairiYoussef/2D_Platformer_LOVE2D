@@ -109,6 +109,7 @@ function love.load()
 
     love.graphics.setDefaultFilter("nearest", "nearest")
 
+    Sky = love.graphics.newImage('Sprites/SUMMER BG/PNG/summer 1/1.png')
     player.spriteSheet = love.graphics.newImage('Sprites/shinobi/shinobi/walk.png')
 
     SPRITE_WIDTH, SPRITE_HEIGHT = player.spriteSheet:getWidth(), player.spriteSheet:getHeight()
@@ -146,7 +147,7 @@ function love.update(dt)
     local vx = 0
     local mapW = gameMap.width * gameMap.tilewidth
     local mapH = gameMap.height * gameMap.tileheight
-    
+
     if love.keyboard.isDown('right')then
         player.animation.idle = false
         player.animation.direction = "right"
@@ -245,13 +246,14 @@ function love.draw()
         love.graphics.setColor(1, 1, 1)
         love.graphics.printf("HP: " .. tonumber(player.health) .."/" .. player.maxHealth, love.graphics.newFont(16), 10 + player.maxHealth *2, 10, love.graphics.getWidth())
         cam:attach()
+        love.graphics.draw(Sky,0,0,0,10,2)
         gameMap:drawLayer(gameMap.layers["Mountains"])
         gameMap:drawLayer(gameMap.layers["BACKGROUND TREES"])
         gameMap:drawLayer(gameMap.layers["Tile Layer 1"])
         gameMap:drawLayer(gameMap.layers["Trees"])
         gameMap:drawLayer(gameMap.layers["Objects"])
         if player.animation.direction == "right" then
-            player.animation.animation:draw(player.spriteSheet, player.collider:getX()-40, player.collider:getY()-100)
+            player.animation.animation:draw(player.spriteSheet, player.collider:getX()-40, player.collider:getY()-100,0)
         else
             player.animation.animation:draw(player.spriteSheet, player.collider:getX()-53, player.collider:getY()-100, 0, -1, 1, QUAD_WIDTH, 0)
         end
