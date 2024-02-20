@@ -25,6 +25,7 @@ This document provides an overview and documentation for the Love2D game impleme
 ## Requirements
 
 - Love2D framework installed on your system.
+- Windfield, anim8, sti and camera libraries availble in GitHub availble in a ./lib folder.
 
 ## Installation
 
