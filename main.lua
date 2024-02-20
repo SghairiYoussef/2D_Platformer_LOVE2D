@@ -100,6 +100,7 @@ function love.load()
     player.speed = 300
     player.health = 100
     player.maxHealth = 100
+    player.stamina = 100
     player.collider = world:newRectangleCollider(20, 400, 10, 60)
     player.collider:setCollisionClass('Player')
     player.collider:setFixedRotation (true)
@@ -151,7 +152,7 @@ function love.update(dt)
     if love.keyboard.isDown('right')then
         player.animation.idle = false
         player.animation.direction = "right"
-        if love.keyboard.isDown("lshift") then
+        if love.keyboard.isDown("lshift") and player.stamina > 0 then
             player.spriteSheet = love.graphics.newImage("Sprites/SHINOBI/shinobi/Run.png")
             isRunning = true
             vx = 2.5 * player.animation.speed
@@ -165,7 +166,7 @@ function love.update(dt)
     if love.keyboard.isDown('left') then
         player.animation.idle = false
         player.animation.direction = "left"
-        if love.keyboard.isDown("lshift") then
+        if love.keyboard.isDown("lshift") and player.stamina > 0 then
             player.spriteSheet = love.graphics.newImage("Sprites/SHINOBI/shinobi/Run.png")
             isRunning = true
             vx = -2.5 * player.animation.speed
@@ -177,6 +178,11 @@ function love.update(dt)
         isMoving = true
     end
 
+    if isRunning == true then
+        player.stamina = player.stamina - 0.2
+    elseif player.stamina < 100 then
+        player.stamina = player.stamina + 0.1
+    end
     if not isMoving then
         player.animation.idle = true
         isRunning = false
@@ -240,13 +246,8 @@ end
 
 function love.draw()
     if state["Running"] == true then
-        love.graphics.rectangle("fill", 10, 10 , player.maxHealth * 2, 15)
-        love.graphics.setColor(1, 0, 0)
-        love.graphics.rectangle("fill", 10, 10, player.health * 2 * player.maxHealth/100, 15)
-        love.graphics.setColor(1, 1, 1)
-        love.graphics.printf("HP: " .. tonumber(player.health) .."/" .. player.maxHealth, love.graphics.newFont(16), 10 + player.maxHealth *2, 10, love.graphics.getWidth())
+        love.graphics.draw(Sky,0,0,0,2.5,2)
         cam:attach()
-        love.graphics.draw(Sky,0,0,0,10,2)
         gameMap:drawLayer(gameMap.layers["Mountains"])
         gameMap:drawLayer(gameMap.layers["BACKGROUND TREES"])
         gameMap:drawLayer(gameMap.layers["Tile Layer 1"])
@@ -258,6 +259,9 @@ function love.draw()
             player.animation.animation:draw(player.spriteSheet, player.collider:getX()-53, player.collider:getY()-100, 0, -1, 1, QUAD_WIDTH, 0)
         end
         cam:detach()
+        love.graphics.draw(love.graphics.newImage("Sprites/HUD/hp_bar.png"),80,25,0,player.health/100,1)
+        love.graphics.draw(love.graphics.newImage("Sprites/HUD/mp_bar.png"),75,32,0,player.stamina/100,1)
+        love.graphics.draw(love.graphics.newImage("Sprites/HUD/hud_bg_without_custom_meter.png"),0,0)
     elseif state["Start"] == true or state["Pause"] == true then
         buttons.start_state.play_game:draw(10, 20, 17, 10)
         buttons.start_state.save:draw(10, 70, 17, 10)
