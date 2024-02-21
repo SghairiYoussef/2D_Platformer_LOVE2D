@@ -148,18 +148,23 @@ function love.update(dt)
     local vx = 0
     local mapW = gameMap.width * gameMap.tilewidth
     local mapH = gameMap.height * gameMap.tileheight
-
+    local isExhausted = false
     if love.keyboard.isDown('right')then
         player.animation.idle = false
         player.animation.direction = "right"
         if love.keyboard.isDown("lshift") and player.stamina > 0 then
             player.spriteSheet = love.graphics.newImage("Sprites/SHINOBI/shinobi/Run.png")
             isRunning = true
+            isExhausted = false
             vx = 2.5 * player.animation.speed
         else
             vx = player.animation.speed
             isRunning = false
             player.spriteSheet = love.graphics.newImage('Sprites/shinobi/shinobi/walk.png')
+            if player.stamina < 0 and isExhausted == false then
+                player.stamina = -20
+                isExhausted = true
+            end
         end
         isMoving = true
     end
@@ -169,11 +174,16 @@ function love.update(dt)
         if love.keyboard.isDown("lshift") and player.stamina > 0 then
             player.spriteSheet = love.graphics.newImage("Sprites/SHINOBI/shinobi/Run.png")
             isRunning = true
+            isExhausted = false
             vx = -2.5 * player.animation.speed
         else
             vx = player.animation.speed * -1
             isRunning = false
             player.spriteSheet = love.graphics.newImage('Sprites/shinobi/shinobi/walk.png')
+            if player.stamina < 0 and isExhausted ==false then
+                player.stamina = -20
+                isExhausted = true
+            end
         end
         isMoving = true
     end
@@ -263,9 +273,10 @@ function love.draw()
         love.graphics.draw(love.graphics.newImage("Sprites/HUD/mp_bar.png"),75,32,0,player.stamina/100,1)
         love.graphics.draw(love.graphics.newImage("Sprites/HUD/hud_bg_without_custom_meter.png"),0,0)
     elseif state["Start"] == true or state["Pause"] == true then
-        buttons.start_state.play_game:draw(10, 20, 17, 10)
-        buttons.start_state.save:draw(10, 70, 17, 10)
-        buttons.start_state.exit_game:draw(10, 120, 17, 10)
+        love.graphics.draw(love.graphics.newImage("Sprites/SUMMER BG/PNG/summer8/summer8.png"),0,0,0,0.65)
+        buttons.start_state.play_game:draw(520, 170, 17, 10)
+        buttons.start_state.save:draw(520, 220, 17, 10)
+        buttons.start_state.exit_game:draw(520, 270, 17, 10)
     elseif state["Closing"] == true then
         buttons.start_state.play_game:draw(10, 20, 17, 10)
         love.graphics.printf("THANKS FOR PLAYING", love.graphics.newFont(16), 10, love.graphics.getHeight() - 350, love.graphics.getWidth())
@@ -278,7 +289,7 @@ end
 -- Jump Functionalities
 function love.keypressed(key)
     if key == 'space'  and jumpCount<2 then
-        player.collider:applyLinearImpulse(0, -150)
+        player.collider:applyLinearImpulse(0, -200)
         jumpCount = jumpCount + 1
         player.isJumping = true
     end
